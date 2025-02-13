@@ -1,0 +1,24 @@
+{
+  "name": "pirate-land-backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev-win": "set NODE_ENV=dev&& nodemon ./index.js",
+    "dev-mac": "export NODE_ENV=dev&& nodemon ./index.js",
+    "start": "node ./index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "REST API for pirate-land",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "morgan": "^1.10.0",
+    "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}
