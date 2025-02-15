@@ -1,22 +1,13 @@
 require("dotenv").config();
 
-const combineMiddlewares = require("./src/utils/middleware");
+const { app, io, httpServer } = require("./src/utils/server");
 const socketHandler = require("./src/utils/socket");
-
-const { app, httpServer } = require("./src/utils/server");
+const combineMiddlewares = require("./src/utils/middleware");
+const combineRoutes = require("./src/routes");
 
 combineMiddlewares(app);
+combineRoutes(app);
 socketHandler(io);
-
-// base route
-app.get("/", (req, res) => {
-  return res.status(200).json("Base route for Pirate land");
-});
-
-// all other invalid routes
-app.get("/*", (req, res) => {
-  return res.status(400).json("Invalid route");
-});
 
 const PORT = process.env.PORT || 5000;
 const server = httpServer.listen(PORT, async () => {
