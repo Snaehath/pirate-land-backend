@@ -15,7 +15,8 @@ const whitelist = [
 const isUserLoggedIn = async (userId) => {
   const { rowLength } = await client.execute(
     `SELECT id FROM tokens WHERE id = ?`,
-    [userId]
+    [userId],
+    {prepare: true}
   );
   return rowLength > 0;
 };
@@ -23,13 +24,13 @@ const isUserLoggedIn = async (userId) => {
 const loginUser = async (userId, token) => {
   const QUERY = `INSERT INTO tokens (id, tkn) VALUES (?, ?)`;
   const VALUES = [userId, token];
-  await client.execute(QUERY, VALUES);
+  await client.execute(QUERY, VALUES, {prepare: true});
 };
 
 const removeUser = async (userId) => {
   const QUERY = `DELETE FROM tokens WHERE id = ?`;
   const VALUES = [userId];
-  await client.execute(QUERY, VALUES);
+  await client.execute(QUERY, VALUES, {prepare: true});
 };
 
 const generateAccessToken = async (userId) => {

@@ -22,7 +22,6 @@ const server = httpServer.listen(PORT, async () => {
   console.log(`[SERVER] Listening to PORT ${PORT}`);
 });
 
-
 // purposely crashing
 process.on("uncaughtException", err => {
   server.close();
