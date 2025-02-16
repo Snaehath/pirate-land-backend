@@ -2,7 +2,7 @@
 const router = require("express").Router();
 
 // custom
-const client = require("../utils/astra-database");
+const client = require("../utils/astra.util");
 
 router.get("/server", (req, res) => {
   return res.status(200).json("SERVER - Check SUCCESS");

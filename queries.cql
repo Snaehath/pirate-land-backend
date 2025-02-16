@@ -1,5 +1,5 @@
-CREATE TABLE tokens (
-    id UUID,
-    tkn TEXT,
-    PRIMARY KEY (id)
-);
+CREATE TABLE IF NOT EXISTS user_tokens (
+    user_id TEXT, 
+    token TEXT, 
+    PRIMARY KEY (user_id, token)
+) WITH CLUSTERING ORDER BY (token ASC);

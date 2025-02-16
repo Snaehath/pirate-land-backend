@@ -1,8 +1,8 @@
 require("dotenv").config();
 
-const { app, io, httpServer } = require("./src/utils/server");
-const socketHandler = require("./src/utils/socket");
-const combineMiddlewares = require("./src/utils/middleware");
+const { app, io, httpServer } = require("./src/utils/server.util");
+const socketHandler = require("./src/utils/socket.util");
+const combineMiddlewares = require("./src/utils/middleware.util");
 const combineRoutes = require("./src/routes");
 
 combineMiddlewares(app);
