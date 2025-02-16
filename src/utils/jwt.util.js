@@ -2,10 +2,15 @@
 const jwt = require("jsonwebtoken");
 
 // custom
-const client = require("./astra-database");
+const client = require("./astra-database.util");
 
 // endpoints that need not require token
-const whitelist = ["/api/validation/server", "/api/validation/db"];
+const whitelist = [
+  "/api/validation/server",
+  "/api/validation/db",
+  "/api/auth/login",
+  "/api/users/create",
+];
 
 const isUserLoggedIn = async (userId) => {
   const { rowLength } = await client.execute(

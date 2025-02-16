@@ -1,5 +1,12 @@
-CREATE TABLE IF NOT EXISTS user_tokens (
-    user_id TEXT, 
-    token TEXT, 
-    PRIMARY KEY (user_id, token)
-) WITH CLUSTERING ORDER BY (token ASC);
+CREATE TABLE IF NOT EXISTS tokens (
+    id TEXT, 
+    tkn TEXT, 
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS users (
+    id TEXT, 
+    name TEXT, 
+    avatar INT,
+    PRIMARY KEY (id)
+);
