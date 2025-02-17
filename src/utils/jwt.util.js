@@ -61,7 +61,7 @@ const verifyUser = async (req, res, next) => {
     const { id } = jwt.verify(token, process.env.JWT_SECRET);
     const QUERY = `SELECT tkn FROM tokens WHERE id = ?`;
     const VALUES = [id];
-    const { rows, rowLength } = await client.execute(QUERY, VALUES);
+    const { rows, rowLength } = await client.execute(QUERY, VALUES, {prepare: true});
     if (!isUserLoggedIn(id) || !rowLength || rows[0].tkn != token)
       throw new Error("Not valid");
     req.userId = id;
