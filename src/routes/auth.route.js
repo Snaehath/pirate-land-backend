@@ -4,6 +4,7 @@ const router = require("express").Router();
 // custom
 const client = require("../utils/astra-database.util");
 const { isUserLoggedIn, generateAccessToken, generateRefreshToken, removeUser } = require("../utils/jwt.util");
+const { getRandomUserName } = require("../utils/misc.util");
 
 // logging in the user
 router.post("/login", async (req, res) => {
@@ -16,8 +17,27 @@ router.post("/login", async (req, res) => {
         const result = await client.execute(QUERY, VALUES, { prepare: true });
 
         // when user id is not available
-        if (!result.rowLength)
-            return res.status(400).json("Account not found");
+        // create the user
+        if (!result.rowLength) {
+            // creating random user name
+            const name = getRandomUserName();
+
+            // writing to database
+            const QUERY = `
+                INSERT INTO users (id, name, avatar)
+                VALUES (?, ?, 0);
+            `;  
+            const VALUES = [userId, name];
+            await client.execute(QUERY, VALUES, {prepare: true});
+
+            // generate session token
+            const sessionToken = await generateAccessToken(userId);
+            
+            return res.status(200).json({
+                isExisting: false,
+                sessionToken
+            });
+        }
 
         // extract user
         const user = result.rows[0];
@@ -30,9 +50,11 @@ router.post("/login", async (req, res) => {
         const sessionToken = await generateAccessToken(user.id);
 
         return res.status(200).json({
+            isExisting: true,
             sessionToken
         });
     } catch (err) {
+        console.log({err});
         return res.status(500).json(err);
     }
 });
