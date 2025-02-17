@@ -10,6 +10,11 @@ const getRandomUserName = () => {
     return randomName;
 };
 
+const sleep = (timeInMs) => new Promise(
+    (resolve) => setTimeout(resolve, timeInMs)
+);
+
 module.exports = {
-    getRandomUserName
+    getRandomUserName,
+    sleep
 };
