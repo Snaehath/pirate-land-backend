@@ -34,7 +34,7 @@ const removeUser = async (userId) => {
 };
 
 const generateAccessToken = async (userId) => {
-  if (await isUserLoggedIn(userId)) return null;
+  // if (await isUserLoggedIn(userId)) return null;
 
   const token = jwt.sign({ id: userId }, process.env.JWT_SECRET);
   await loginUser(userId, token);
