@@ -23,4 +23,24 @@ router.get("/:id", async (req, res) => {
     }
 });
 
+// update user data
+router.put("/:id", async (req, res) => {
+    try {
+        const id = req.params.id;
+        const {name, avatar} = req.body;
+
+        // update the user via db
+        const QUERY = `
+            UPDATE users SET name = ?, avatar = ?
+            WHERE id = ?;
+        `;
+        const VALUES = [name, avatar, id];
+        await client.execute(QUERY, VALUES, {prepare: true});
+        
+        return res.status(200).json("Account updated successfully");
+    } catch (err) {
+        return res.status(500).json(err);
+    }
+});
+
 module.exports = router;

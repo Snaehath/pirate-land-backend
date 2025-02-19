@@ -4,7 +4,7 @@ const { uniqueNamesGenerator, adjectives, colors, animals, starWars } = require(
 const getRandomUserName = () => {
     const randomName = uniqueNamesGenerator({
         dictionaries: [Math.random() > 0.5 ? adjectives : colors, animals],
-        separator: ' ',
+        separator: '',
         style: 'capital',
     });
     return randomName;
