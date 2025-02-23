@@ -22,13 +22,21 @@ router.post("/login", async (req, res) => {
             // creating random user name
             const name = getRandomUserName();
 
-            // writing to database
-            const QUERY = `
+            // writing to users table
+            const QUERY1 = `
                 INSERT INTO users (id, name, avatar)
                 VALUES (?, ?, 0);
             `;  
-            const VALUES = [userId, name];
-            await client.execute(QUERY, VALUES, {prepare: true});
+            const VALUES1 = [userId, name];
+            await client.execute(QUERY1, VALUES1, {prepare: true});
+
+            // writing to leaderboard table
+            const QUERY2 = `
+                INSERT INTO leaderboard (pk, player_id, wins, total_played)
+                VALUES (1, ?, 0, 0);
+            `;  
+            const VALUES2 = [userId];
+            await client.execute(QUERY2, VALUES2, {prepare: true});
 
             // generate session token
             const sessionToken = await generateAccessToken(userId);
