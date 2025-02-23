@@ -1,5 +1,5 @@
 // packages
-const { uniqueNamesGenerator, adjectives, colors, animals, starWars } = require('unique-names-generator');
+const { uniqueNamesGenerator, adjectives, colors, animals } = require('unique-names-generator');
 
 const getRandomUserName = () => {
     const randomName = uniqueNamesGenerator({
@@ -10,11 +10,22 @@ const getRandomUserName = () => {
     return randomName;
 };
 
+const getRandomRoomName = () => {
+    const randomNo = Math.floor(10 + Math.random() * 90);
+    const randomName = uniqueNamesGenerator({
+        dictionaries: [adjectives, animals],
+        separator: '-',
+        style: 'lowerCase',
+    });
+    return `${randomName}-${randomNo}`;
+};
+
 const sleep = (timeInMs) => new Promise(
     (resolve) => setTimeout(resolve, timeInMs)
 );
 
 module.exports = {
     getRandomUserName,
-    sleep
+    getRandomRoomName,
+    sleep,
 };
