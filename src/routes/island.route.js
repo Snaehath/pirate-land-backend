@@ -58,6 +58,7 @@ router.get("/:islandId", async (req, res) => {
         const VALUES = [islandId];
         const response = await client.execute(QUERY, VALUES, {prepare: true});
 
+        // when island doesn't exist
         if (!response.rowLength) {
             return res.status(400).json(`Island - "${islandId}" not found`);
         }
@@ -69,6 +70,61 @@ router.get("/:islandId", async (req, res) => {
             creatorPayed: creator_payed, 
             inviteePayed: invitee_payed
         });
+    } catch (err) {
+        return res.status(500).json({err});
+    }
+});
+
+// join island
+router.put("/:islandId", async (req, res) => {
+    try {
+        const islandId = req.params.islandId;
+        const userId = req.userId;
+
+        // fetch the island
+        const QUERY = `
+            SELECT id, invitee, status FROM ISLANDS
+            WHERE id = ?;
+        `;
+        const VALUES = [islandId];
+        const response = await client.execute(QUERY, VALUES, {prepare: true});
+
+        // send error when island doesn't exist
+        if (!response.rowLength) {
+            return res.status(400).json(`Island - "${islandId}" not found`);
+        }
+
+        // extract island info
+        const islandInfo = response.rows[0];
+
+        // when game already started
+        if (islandInfo.status !== "CREATED") {
+            return res.status(400).json("Island already being raided");
+        }
+
+        // when game is full
+        if (islandInfo.invitee !== null) {
+            return res.status(400).json("Island is full");
+        }
+
+        // when all validations are passed
+        // 1. update the user's current game
+        const QUERY1 = `
+            UPDATE users SET current_game = ?
+            WHERE id = ?;
+        `;
+        const VALUES1 = [islandId, userId];
+        await client.execute(QUERY1, VALUES1, {prepare: true});
+
+        // 2. update invitee of the island
+        const QUERY2 = `
+            UPDATE islands SET invitee = ?
+            WHERE id = ?;
+        `;
+        const VALUES2= [userId, islandId];
+        await client.execute(QUERY2, VALUES2, {prepare: true});
+
+        return res.status(200).json("Island joined successfully");
     } catch (err) {
         return res.status(500).json({err});
     }
