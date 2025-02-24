@@ -43,7 +43,8 @@ router.post("/login", async (req, res) => {
             
             return res.status(200).json({
                 isExisting: false,
-                sessionToken
+                sessionToken,
+                currentGame: null,
             });
         }
 
@@ -54,12 +55,23 @@ router.post("/login", async (req, res) => {
         if (await isUserLoggedIn(user.id))
             return res.status(400).json("Already logged in");
 
+        // get user current game
+        const QUERY3 = `
+            SELECT current_game FROM users
+            WHERE id = ?;
+        `;
+        const VALUES3 = [userId];
+        const currGameResponse = await client.execute(QUERY3, VALUES3, { prepare: true });
+
         // generate session token
         const sessionToken = await generateAccessToken(user.id);
 
         return res.status(200).json({
             isExisting: true,
-            sessionToken
+            sessionToken,
+            currentGame: currGameResponse.rowLength > 0 
+                ? currGameResponse.rows[0].current_game 
+                : null,
         });
     } catch (err) {
         console.log({err});

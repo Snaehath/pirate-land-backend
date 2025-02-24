@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
     id TEXT,
     name TEXT,
     avatar INT,
-    current_game TIMEUUID,
+    current_game TEXT,
     PRIMARY KEY (id)
 );
 
