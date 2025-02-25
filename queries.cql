@@ -62,3 +62,10 @@ CREATE TABLE IF NOT EXISTS leaderboard (
     total_played INT,
     PRIMARY KEY (pk, wins, player_id)
 ) WITH CLUSTERING ORDER BY (wins DESC);
+
+CREATE TABLE IF NOT EXISTS sockets (
+    id TEXT,
+    socket_id TEXT,
+    PRIMARY KEY (id)
+);
+CREATE CUSTOM INDEX sockets_socket_id_index on sockets (socket_id) USING 'StorageAttachedIndex';
