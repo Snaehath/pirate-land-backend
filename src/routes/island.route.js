@@ -269,7 +269,17 @@ router.put("/end-voyage/:islandId", async (req, res) => {
 // move game to ready state
 router.put("/island-ready/:islandId", async (req, res) => {
     try {
+        const islandId = req.params.islandId;
 
+        // update island to be ready
+        const QUERY = `
+            UPDATE islands SET status = ?
+            WHERE id = ?;
+        `;
+        const VALUES = ["READY", islandId];
+        await client.execute(QUERY, VALUES, {prepare: true});
+
+        return res.status(200).json("Island is now ready");
     } catch (err) {
         return res.status(500).json({err});
     }

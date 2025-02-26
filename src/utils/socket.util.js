@@ -51,6 +51,11 @@ const socketHandler = (io) => {
       socket.broadcast.to(roomId).emit("playerLeft", {userId});
       console.log(`[SOCKET] ${socket.id} left ${roomId}`);
     });
+    // creator update game to ready state
+    socket.on("readyGame", roomId => {
+      socket.broadcast.to(roomId).emit("readyGame", {roomId});
+      console.log(`[SOCKET] Island ${roomId} is ready`);
+    });
   });
 };
 
