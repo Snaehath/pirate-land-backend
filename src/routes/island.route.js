@@ -76,7 +76,7 @@ router.get("/:islandId", async (req, res) => {
 });
 
 // join island
-router.put("/:islandId", async (req, res) => {
+router.put("/join-island/:islandId", async (req, res) => {
     try {
         const islandId = req.params.islandId;
         const userId = req.userId;
@@ -131,7 +131,7 @@ router.put("/:islandId", async (req, res) => {
 });
 
 // end voyage
-router.delete("/:islandId", async (req, res) => {
+router.put("/end-voyage/:islandId", async (req, res) => {
     try {
         const islandId = req.params.islandId;
         const userId = req.userId;
@@ -262,6 +262,15 @@ router.delete("/:islandId", async (req, res) => {
         return res.status(200).json("Voyage ended successfully");
     } catch (err) {
         console.log({err});
+        return res.status(500).json({err});
+    }
+});
+
+// move game to ready state
+router.put("/island-ready/:islandId", async (req, res) => {
+    try {
+
+    } catch (err) {
         return res.status(500).json({err});
     }
 });
