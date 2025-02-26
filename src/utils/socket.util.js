@@ -56,6 +56,11 @@ const socketHandler = (io) => {
       socket.broadcast.to(roomId).emit("readyGame", {roomId});
       console.log(`[SOCKET] Island ${roomId} is ready`);
     });
+    // user updates chat
+    socket.on("newMessage", ({roomId, msgObj}) => {
+      socket.broadcast.to(roomId).emit("newMessage", msgObj);
+      console.log(`[SERVER] ${socket.id} message to ${roomId}`);
+    });
   });
 };
 
