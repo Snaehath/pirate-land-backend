@@ -3,7 +3,7 @@ const router = require("express").Router();
 
 // custom
 const client = require("../utils/astra-database.util");
-const {getRandomRoomName} = require("../utils/misc.util");
+const {getRandomRoomName, updateLeaderBoard} = require("../utils/misc.util");
 
 // create island
 router.post("/new", async (req, res) => {
@@ -126,6 +126,142 @@ router.put("/:islandId", async (req, res) => {
 
         return res.status(200).json("Island joined successfully");
     } catch (err) {
+        return res.status(500).json({err});
+    }
+});
+
+// end voyage
+router.delete("/:islandId", async (req, res) => {
+    try {
+        const islandId = req.params.islandId;
+        const userId = req.userId;
+
+        // fetch island info
+        const QUERY = `
+            SELECT * FROM islands
+            WHERE id = ?;
+        `;
+        const VALUES = [islandId];
+        const response = await client.execute(QUERY, VALUES, {prepare: true});
+
+        // when island doesn't exist
+        if (response.rowLength === 0)
+            return res.status(400).json("Island doesn't exist");
+
+        const islandInfo = response.rows[0];
+
+        // when creator is leaving
+        if (islandInfo.creator === userId) {
+            // game is ended
+            const QUERY1 = `
+                UPDATE islands SET status = ?
+                WHERE id = ?;
+            `;
+            const VALUES1 = ["ENDED", islandId];
+            await client.execute(QUERY1, VALUES1, {prepare: true});
+            
+            // set current game of both users to null
+            const QUERY2 = `
+                DELETE current_game FROM users
+                WHERE id in (?, ?);
+            `;
+            const VALUES2 = [islandInfo.creator, islandInfo.invitee ?? "1"];
+            await client.execute(QUERY2, VALUES2, {prepare: true});
+
+            // invitee is there when creator leaves
+            // that means the creator has lost
+            if (islandInfo.invitee !== null) {
+                // update history of creator as lost against invitee
+                const QUERY3 = `
+                    INSERT INTO history (player_id, island_id, opponent, status, id)
+                    VALUES (?, ?, ?, ?, now());
+                `;
+                const VALUES3 = [islandInfo.creator, islandId, islandInfo.invitee, "LOST"];
+                await client.execute(QUERY3, VALUES3, {prepare: true});
+
+                // update history of invitee as won against creator
+                const QUERY4 = `
+                    INSERT INTO history (player_id, island_id, opponent, status, id)
+                    VALUES (?, ?, ?, ?, now());
+                `;
+                const VALUES4 = [islandInfo.invitee, islandId, islandInfo.creator, "WON"];
+                await client.execute(QUERY4, VALUES4, {prepare: true});
+
+                // update scoredboard of creator
+                await updateLeaderBoard(islandInfo.creator, false);
+
+                // update scoreboard of invitee
+                await updateLeaderBoard(islandInfo.invitee, true);
+            }
+        }
+        // when invitee is leaving
+        else {
+            // if game is just in "CREATED" state
+            // another invitee can join if this
+            // invitee leaves
+            if (islandInfo.status === "CREATED") {
+                // set current game of invitee to null
+                const QUERY1 = `
+                    DELETE current_game FROM users
+                    WHERE id = ?;
+                `;
+                const VALUES1 = [islandInfo.invitee];
+                await client.execute(QUERY1, VALUES1, {prepare: true});
+
+                // set invitee of island to null
+                const QUERY2 = `
+                    DELETE invitee FROM islands
+                    WHERE id = ?;
+                `;
+                const VALUES2 = [islandId];
+                await client.execute(QUERY2, VALUES2, {prepare: true});
+            } 
+            // leaving the game in any other state
+            // is considered as lost
+            else {
+                // game is ended
+                const QUERY1 = `
+                    UPDATE islands SET status = ?
+                    WHERE id = ?;
+                `;
+                const VALUES1 = ["ENDED", islandId];
+                await client.execute(QUERY1, VALUES1, {prepare: true});
+
+                // set current game of both users to null
+                const QUERY2 = `
+                    DELETE current_game FROM users
+                    WHERE id in (?, ?);
+                `;
+                const VALUES2 = [islandInfo.creator, islandInfo.invitee ?? "1"];
+                await client.execute(QUERY2, VALUES2, {prepare: true});
+
+                // update history of creator as won against invitee
+                const QUERY3 = `
+                    INSERT INTO history (player_id, island_id, opponent, status, id)
+                    VALUES (?, ?, ?, ?, now());
+                `;
+                const VALUES3 = [islandInfo.creator, islandId, islandInfo.invitee, "WON"];
+                await client.execute(QUERY3, VALUES3, {prepare: true});
+
+                // update history of invitee as lost against creator
+                const QUERY4 = `
+                    INSERT INTO history (player_id, island_id, opponent, status, id)
+                    VALUES (?, ?, ?, ?, now());
+                `;
+                const VALUES4 = [islandInfo.invitee, islandId, islandInfo.creator, "LOST"];
+                await client.execute(QUERY4, VALUES4, {prepare: true});
+
+                // update scoredboard of creator
+                await updateLeaderBoard(islandInfo.creator, true);
+
+                // update scoreboard of invitee
+                await updateLeaderBoard(islandInfo.invitee, false);
+            }
+        }
+
+        return res.status(200).json("Voyage ended successfully");
+    } catch (err) {
+        console.log({err});
         return res.status(500).json({err});
     }
 });
