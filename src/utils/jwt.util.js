@@ -22,7 +22,7 @@ const isUserLoggedIn = async (userId) => {
 };
 
 const loginUser = async (userId, token) => {
-  const QUERY = `INSERT INTO tokens (id, tkn) VALUES (?, ?)`;
+  const QUERY = `INSERT INTO tokens (id, tkn) VALUES (?, ?) USING TTL 5400`;
   const VALUES = [userId, token];
   await client.execute(QUERY, VALUES, {prepare: true});
 };

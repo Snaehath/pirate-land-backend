@@ -96,9 +96,6 @@ router.post("/refresh", async (req, res) => {
 router.delete("/logout", async (req, res) => {
     const {userId} = req;
     try {
-        const isLogged = await isUserLoggedIn(userId);
-        if (!isLogged)
-            return res.status(400).json("Not logged in");
         await removeUser(userId);
         return res.status(200).json("Logged out successfully");
     } catch (err) {
