@@ -3,6 +3,7 @@ const router = require("express").Router();
 
 // custom
 const client = require("../utils/astra-database.util");
+const { getUpdatedPositions, isAllPositionsCaught } = require("../utils/misc.util");
 
 // update position when in ready state
 router.put("/ready/:islandId/:position", async (req, res) => {
@@ -98,26 +99,128 @@ router.get("/positions-count/:islandId/:userId", async (req, res) => {
     }
 });
 
-// get actual positions
-router.get("/positions/:islandId", async (req, res) => {
+// get positions
+router.get("/positions/:islandId/:opponentId", async (req, res) => {
     try {
         const userId = req.userId;
         const islandId = req.params.islandId;
+        const opponentId = req.params.opponentId;
 
-        // get the positions
+        // get user positions
         const QUERY = `
             SELECT positions FROM boards
             WHERE island_id = ? AND player_id = ?;
         `;
         const VALUES = [islandId, userId];
-        const response = await client.execute(QUERY, VALUES, {prepare: true});
+        const userPositions = (await client.execute(QUERY, VALUES, {prepare: true})).rows[0]?.positions ?? "";
+        
+        // get opponent positions
+        const QUERY1 = `
+            SELECT positions FROM boards
+            WHERE island_id = ? AND player_id = ?;
+        `;
+        const VALUES1 = [islandId, opponentId];
+        const opponentPositions = (await client.execute(QUERY1, VALUES1, {prepare: true})).rows[0]?.positions ?? "";
+
+        // response to send
+        const positions = userPositions.split(",").filter(Boolean).map(p => Number(p.split("-")[0]));
+        const captures = opponentPositions.split(",").filter(Boolean).filter(p => p.split("-")[1] === "1").map(p => Number(p.split("-")[0]));
+        const captured = userPositions.split(",").filter(Boolean).filter(p => p.split("-")[1] === "1").map(p => Number(p.split("-")[0]));
 
         return res.status(200).json({
-            positions: !response.rowLength 
-            ? [] : 
-            response.rows[0].positions.split(",").filter(Boolean).map(v => Number(v.split('-')[0]))
+            positions,
+            captures,
+            captured,
         });
     } catch (err) {
+        return res.status(500).json({err});
+    }
+});
+
+// try capture
+router.put("/positions/:islandId/:opponentId/:position/:isCreator", async (req, res) => {
+    try {
+        const userId = req.userId;
+        const islandId = req.params.islandId;
+        const opponentId = req.params.opponentId;
+        const position = Number(req.params.position);
+        const isCreator = req.params.isCreator === "true";
+
+        // get opponent positions
+        const QUERY = `
+            SELECT positions FROM boards
+            WHERE island_id = ? AND player_id = ?;
+        `;
+        const VALUES = [islandId, opponentId];
+        const opponentPositions = (await client.execute(QUERY, VALUES, {prepare: true})).rows[0]?.positions ?? "";
+
+        const positions = opponentPositions.split(",").filter(Boolean).map(p => Number(p.split("-")[0]));
+
+        // update chance in island
+        const QUERY1 = `
+            UPDATE islands SET chance = ?
+            WHERE id = ?;
+        `;
+        const VALUES1 = [opponentId, islandId];
+        await client.execute(QUERY1, VALUES1, {prepare: true});
+
+        // check if miss then simply send
+        // it was miss
+        if (!positions.includes(position)) {
+            return res.status(200).json({wasHit: false, gameEnded: false});
+        }
+
+        // update the opponents board
+        const updatedPositions = getUpdatedPositions(opponentPositions, position);
+        const QUERY2 = `
+            UPDATE boards SET positions = ?
+            WHERE island_id = ? AND player_id = ?;
+        `;
+        const VALUES2 = [updatedPositions, islandId, opponentId];
+        await client.execute(QUERY2, VALUES2, {prepare: true});
+
+        // update the scoreboard
+        let QUERY3 = `
+            UPDATE scorecards SET invitee_score += 1
+            WHERE island_id = ?;
+        `;
+        if (isCreator) {
+            QUERY3 = `
+                UPDATE scorecards SET creator_score += 1
+                WHERE island_id = ?;
+            `;  
+        }
+        const VALUES3 = [islandId];
+        await client.execute(QUERY3, VALUES3, {prepare: true});
+
+        const gameEnded = isAllPositionsCaught(updatedPositions);
+
+        // when game is ended
+        if (gameEnded) {
+            // update islands
+            const QUERY4 = `
+                UPDATE islands SET status = ?
+                WHERE id = ?;
+            `;
+            const VALUES4 = ["ENDED", islandId];
+            await client.execute(QUERY4, VALUES4, {prepare: true});
+
+            // set current game of both users to null
+            const QUERY5 = `
+                DELETE current_game FROM users
+                WHERE id in (?, ?);
+            `;
+            const VALUES5 = [userId, opponentId];
+            await client.execute(QUERY5, VALUES5, {prepare: true});
+
+            // update players history
+
+            // update leaderboard
+        }
+
+        return res.status(200).json({wasHit: true, gameEnded});
+    } catch (err) {
+        console.log({err});
         return res.status(500).json({err});
     }
 });

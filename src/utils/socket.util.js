@@ -71,6 +71,21 @@ const socketHandler = (io) => {
       io.to(roomId).emit("startedGame", {roomId});
       console.log(`[SOCKET] Island ${roomId} is started`);
     });
+    // player was captured
+    socket.on("captured", ({roomId, position}) => {
+      socket.broadcast.to(roomId).emit("captured", {position});
+      console.log(`[SERVER] ${socket.id} captured at ${position}`);
+    });
+    // chance gets updated
+    socket.on("chanceUpdate", ({roomId, playerId}) => {
+      socket.broadcast.to(roomId).emit("chanceUpdate", {playerId});
+      console.log(`[SERVER] ${socket.id} updated chance as ${playerId} in ${roomId}`);
+    });
+    // game was ended
+    socket.on("endedGame", ({roomId}) => {
+      socket.broadcast.to(roomId).emit("endedGame", {roomId});
+      console.log(`[SOCKET] Island ${roomId} is ended`);
+    });
   });
 };
 

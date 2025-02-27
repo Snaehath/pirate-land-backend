@@ -32,8 +32,8 @@ CREATE TABLE IF NOT EXISTS boards (
 
 CREATE TABLE IF NOT EXISTS scorecards (
     island_id TEXT,
-    creator_score INT,
-    invitee_score INT,
+    creator_score COUNTER,
+    invitee_score COUNTER,
     PRIMARY KEY (island_id)
 );
 

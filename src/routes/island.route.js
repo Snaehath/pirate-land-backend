@@ -39,6 +39,14 @@ router.post("/new", async (req, res) => {
         const VALUES2 = [islandId, userId];
         await client.execute(QUERY2, VALUES2, {prepare: true});
 
+        // creating score card
+        const QUERY3 = `
+            UPDATE scorecards SET creator_score += 0, invitee_score += 0
+            WHERE island_id = ?;
+        `;
+        const VALUES3 = [islandId];
+        await client.execute(QUERY3, VALUES3, {prepare: true});
+
         return res.status(200).json(islandId);
     } catch (err) {
         return res.status(500).json({err});

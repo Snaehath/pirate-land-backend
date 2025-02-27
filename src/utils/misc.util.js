@@ -55,9 +55,28 @@ const updateLeaderBoard = async (userId, didWin) => {
     await client.execute(QUERY2, VALUES2, {prepare: true});
 };
 
+const getUpdatedPositions = (positions, position) => {
+    const newPositions = [];
+    positions.split(",").filter(Boolean).forEach((pos) => {
+        const p = Number(pos.split("-")[0]);
+        if (p === position) {
+            newPositions.push(`${p}-1`);
+        } else {
+            newPositions.push(pos);
+        }
+    });
+    return newPositions.join();
+};
+
+const isAllPositionsCaught = (positions) => {
+    return positions.length > 0 && !positions.split(",").filter(Boolean).some(p => p.split("-")[1] === "0");
+};
+
 module.exports = {
     getRandomUserName,
     getRandomRoomName,
     sleep,
     updateLeaderBoard,
+    getUpdatedPositions,
+    isAllPositionsCaught,
 };

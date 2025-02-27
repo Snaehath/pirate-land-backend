@@ -3,7 +3,7 @@ const router = require("express").Router();
 
 // custom
 const client = require("../utils/astra-database.util");
-const { isUserLoggedIn, generateAccessToken, generateRefreshToken, removeUser } = require("../utils/jwt.util");
+const { generateAccessToken, generateRefreshToken, removeUser } = require("../utils/jwt.util");
 const { getRandomUserName } = require("../utils/misc.util");
 
 // logging in the user
@@ -50,10 +50,6 @@ router.post("/login", async (req, res) => {
 
         // extract user
         const user = result.rows[0];
-
-        // when the user is already logged in
-        if (await isUserLoggedIn(user.id))
-            return res.status(400).json("Already logged in");
 
         // get user current game
         const QUERY3 = `
