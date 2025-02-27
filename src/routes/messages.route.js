@@ -16,7 +16,7 @@ router.post(`/by_chat_id`, async (req, res) => {
         const VALUE = [chatId];
         const queryOptions = {
             prepare: true,
-            fetchSize: 3
+            fetchSize: 10
         };
         if (page?.length > 0) queryOptions.pageState = page;
         const {rows, pageState} = await client.execute(QUERY, VALUE, {...queryOptions});
