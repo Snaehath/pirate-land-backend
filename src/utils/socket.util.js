@@ -61,6 +61,11 @@ const socketHandler = (io) => {
       socket.broadcast.to(roomId).emit("newMessage", msgObj);
       console.log(`[SERVER] ${socket.id} message to ${roomId}`);
     });
+    // user makes a placement
+    socket.on("placement", (roomId) => {
+      socket.broadcast.to(roomId).emit("placement");
+      console.log(`[SERVER] ${socket.id} placement to ${roomId}`);
+    });
   });
 };
 
