@@ -9,6 +9,7 @@ const whitelist = [
   "/api/validation/server",
   "/api/validation/db",
   "/api/auth/login",
+  "/api/auth/logout",
   "/api/users/create",
 ];
 
@@ -29,7 +30,7 @@ const loginUser = async (userId, token) => {
 
 const removeUser = async (userId) => {
   const QUERY = `DELETE FROM tokens WHERE id = ?`;
-  const VALUES = [userId];
+  const VALUES = [userId ?? "1"];
   await client.execute(QUERY, VALUES, {prepare: true});
 };
 
