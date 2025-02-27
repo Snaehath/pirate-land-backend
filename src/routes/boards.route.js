@@ -96,6 +96,30 @@ router.get("/positions-count/:islandId/:userId", async (req, res) => {
     } catch (err) {
         return res.status(500).json({err});
     }
-})
+});
+
+// get actual positions
+router.get("/positions/:islandId", async (req, res) => {
+    try {
+        const userId = req.userId;
+        const islandId = req.params.islandId;
+
+        // get the positions
+        const QUERY = `
+            SELECT positions FROM boards
+            WHERE island_id = ? AND player_id = ?;
+        `;
+        const VALUES = [islandId, userId];
+        const response = await client.execute(QUERY, VALUES, {prepare: true});
+
+        return res.status(200).json({
+            positions: !response.rowLength 
+            ? [] : 
+            response.rows[0].positions.split(",").filter(Boolean).map(v => Number(v.split('-')[0]))
+        });
+    } catch (err) {
+        return res.status(500).json({err});
+    }
+});
 
 module.exports = router;
