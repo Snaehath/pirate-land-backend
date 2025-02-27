@@ -285,4 +285,23 @@ router.put("/island-ready/:islandId", async (req, res) => {
     }
 });
 
+// move game to started state
+router.put("/island-started/:islandId", async (req, res) => {
+    try {
+        const islandId = req.params.islandId;
+
+        // update island to be started
+        const QUERY = `
+            UPDATE islands SET status = ?
+            WHERE id = ?;
+        `;
+        const VALUES = ["STARTED", islandId];
+        await client.execute(QUERY, VALUES, {prepare: true});
+
+        return res.status(200).json("Island is now ready");
+    } catch (err) {
+        return res.status(500).json({err});
+    }
+});
+
 module.exports = router;

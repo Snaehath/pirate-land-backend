@@ -66,6 +66,11 @@ const socketHandler = (io) => {
       socket.broadcast.to(roomId).emit("placement");
       console.log(`[SERVER] ${socket.id} placement to ${roomId}`);
     });
+    // creator update game to started state
+    socket.on("startedGame", roomId => {
+      io.to(roomId).emit("startedGame", {roomId});
+      console.log(`[SOCKET] Island ${roomId} is started`);
+    });
   });
 };
 
