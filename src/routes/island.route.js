@@ -312,4 +312,34 @@ router.put("/island-started/:islandId", async (req, res) => {
     }
 });
 
+// get the scorecard of the island
+router.put("/scorecard/:islandId", async (req, res) => {
+    try {
+        const islandId = req.params.islandId;
+
+        // fetch island info
+        const QUERY = `
+            SELECT creator, invitee FROM islands
+            WHERE id = ?;
+        `;
+        const VALUES = [islandId];
+        const response = await client.execute(QUERY, VALUES, {prepare: true});
+
+        // fetch island's scorecard
+        const QUERY1 = `
+            SELECT creator_score, invitee_score FROM scorecards
+            WHERE island_id = ?;
+        `;
+        const VALUES1 = [islandId];
+        const response1 = await client.execute(QUERY1, VALUES1, {prepare: true});
+
+        return res.status(200).json({
+            ...response.rows[0],
+            ...response1.rows[0]
+        });
+    } catch (err) {
+        return res.status(500).json({err});
+    }
+});
+
 module.exports = router;
