@@ -2,19 +2,19 @@ const { createServer } = require("http");
 const express = require("express");
 const { Server } = require("socket.io");
 
+const allowedOrigins = require("./origins.util");
+
 const app = express();
 const httpServer = createServer(app);
 
-const origins = ["http://localhost:5173"];
-
 const io = new Server(httpServer, {
-  cors: {
-    origin: [...origins],
-  },
+    cors: {
+        origin: [...allowedOrigins]
+    }
 });
 
 module.exports = {
-  app,
-  httpServer,
-  io,
+    app,
+    httpServer,
+    io
 };
