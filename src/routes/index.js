@@ -6,6 +6,7 @@ const leaderboardRoute = require("./leaderboard.route");
 const islands = require("./island.route");
 const boards = require('./boards.route');
 const messages = require('./messages.route');
+const history = require("./history.route");
 
 const combineRoutes = (app) => {
   app.use("/api/validation", validationRoute);
@@ -15,6 +16,8 @@ const combineRoutes = (app) => {
   app.use("/api/islands", islands);
   app.use("/api/boards", boards);
   app.use("/api/messages", messages);
+  app.use("/api/messages", messages);
+  app.use("/api/history", history);
 };
 
 module.exports = combineRoutes;
