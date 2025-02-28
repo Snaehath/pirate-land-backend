@@ -3,7 +3,7 @@ const router = require("express").Router();
 
 // custom
 const client = require("../utils/astra-database.util");
-const { getUpdatedPositions, isAllPositionsCaught } = require("../utils/misc.util");
+const { getUpdatedPositions, isAllPositionsCaught, updateLeaderBoard } = require("../utils/misc.util");
 
 // update position when in ready state
 router.put("/ready/:islandId/:position", async (req, res) => {
@@ -213,9 +213,25 @@ router.put("/positions/:islandId/:opponentId/:position/:isCreator", async (req, 
             const VALUES5 = [userId, opponentId];
             await client.execute(QUERY5, VALUES5, {prepare: true});
 
-            // update players history
+            // update current user history as won against opponent
+            const QUERY6 = `
+                INSERT INTO history (player_id, island_id, opponent, status, id)
+                VALUES (?, ?, ?, ?, now());
+            `;
+            const VALUES6 = [userId, islandId, opponentId, "WON"];
+            await client.execute(QUERY6, VALUES6, {prepare: true});
+            
+            // update opponent history as lost against user
+            const QUERY7 = `
+                INSERT INTO history (player_id, island_id, opponent, status, id)
+                VALUES (?, ?, ?, ?, now());
+            `;
+            const VALUES7 = [opponentId, islandId, userId, "LOST"];
+            await client.execute(QUERY7, VALUES7, {prepare: true});
 
             // update leaderboard
+            await updateLeaderBoard(userId, true);
+            await updateLeaderBoard(opponentId, false);
         }
 
         return res.status(200).json({wasHit: true, gameEnded});
