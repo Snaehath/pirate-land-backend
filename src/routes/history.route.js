@@ -11,7 +11,7 @@ router.get("/:playerId", async (req, res) => {
         
         // get all history of player
         const QUERY = `
-            SELECT toTimestamp(id) as id, opponent, status FROM history
+            SELECT toTimestamp(id) as id, island_id, opponent, status FROM history
             WHERE player_id = ?;
         `;
         const VALUES = [playerId];
