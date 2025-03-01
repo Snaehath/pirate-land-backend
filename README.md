@@ -8,7 +8,12 @@
 
 ### Links
 Project link - https://pirateland.vercel.app/
-Demo video - 
+
+Submission video - https://drive.google.com/file/d/1sHB28q_YpcvhKrLo_cdRVh7fplaS6x_4/view?usp=sharing
+
+Demo video - https://drive.google.com/file/d/1w2qc3V8b3WdF_FzzfCbqMfnj_3ig7DD4/view?usp=sharing
+
+Presentation - https://docs.google.com/presentation/d/1Sig2T12CpNw6qjJvVRw5SOwfzR4Alc7qDaGf_DPdazw/edit?usp=sharing
 
 ### Setup
 1. Update the allowed origins value in the `./src/utils/origins.util.js`
